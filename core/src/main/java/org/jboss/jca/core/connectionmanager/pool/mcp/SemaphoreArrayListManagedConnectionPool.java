@@ -59,7 +59,9 @@ import org.jboss.logging.Logger;
  */
 public class SemaphoreArrayListManagedConnectionPool implements ManagedConnectionPool
 {
-   /** The log */
+   private static final int _20_SECONDS = 20000; // 20 seconds in milliseconds
+
+    /** The log */
    private CoreLogger log;
 
    /** Whether debug is enabled */
@@ -132,7 +134,7 @@ public class SemaphoreArrayListManagedConnectionPool implements ManagedConnectio
          public void run() {
             profileLogger.debug("Sleeping");
             try {
-               Thread.sleep(20000);
+               Thread.sleep(_20_SECONDS);
             } catch (InterruptedException e) {
                profileLogger.warn("Interrupted sleep!", e);
             }
