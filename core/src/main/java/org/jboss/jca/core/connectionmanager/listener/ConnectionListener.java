@@ -150,4 +150,9 @@ public interface ConnectionListener extends org.jboss.jca.core.api.connectionman
     *           milliseconds.
     */
    public void setLastValidatedTime(long lastValidated);
+
+   /**
+    * Print the status of the underlying connection
+    */
+   public void printStatus();
 }

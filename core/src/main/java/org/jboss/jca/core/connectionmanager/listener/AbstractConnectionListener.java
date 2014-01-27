@@ -28,6 +28,7 @@ import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +38,7 @@ import javax.resource.spi.ConnectionEvent;
 import javax.resource.spi.ManagedConnection;
 import javax.transaction.SystemException;
 
+import org.jboss.logging.Logger;
 import org.jboss.logging.Messages;
 
 /**
@@ -49,8 +51,10 @@ import org.jboss.logging.Messages;
  */
 public abstract class AbstractConnectionListener implements ConnectionListener
 {
+   private static final Logger profileLogger = Logger.getLogger("com.efstech." + AbstractConnectionListener.class);
+
    private final CoreLogger log;
-   
+
    /** Log trace */
    protected boolean trace;
    
@@ -107,6 +111,18 @@ public abstract class AbstractConnectionListener implements ConnectionListener
       this.log = getLogger();
       this.trace = log.isTraceEnabled();
       this.lastUse = System.currentTimeMillis();
+   }
+
+   @Override
+   public void printStatus() {
+      profileLogger.debug("Printing status");
+      Class<?> c = managedConnection.getClass();
+      try {
+         Method method = c.getMethod("printStatus");
+         method.invoke(managedConnection);
+      } catch (Exception e) {
+         log.debug("Error printing status", e);
+      }
    }
 
    /**

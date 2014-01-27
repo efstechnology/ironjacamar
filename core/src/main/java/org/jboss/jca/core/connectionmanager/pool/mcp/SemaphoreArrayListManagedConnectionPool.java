@@ -32,7 +32,11 @@ import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 import org.jboss.jca.core.connectionmanager.pool.api.PrefillPool;
 import org.jboss.jca.core.connectionmanager.pool.idle.IdleRemover;
 import org.jboss.jca.core.connectionmanager.pool.validator.ConnectionValidator;
+import org.jboss.logging.Messages;
 
+import javax.resource.ResourceException;
+import javax.resource.spi.*;
+import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -42,15 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.RetryableUnavailableException;
-import javax.resource.spi.ValidatingManagedConnectionFactory;
-import javax.security.auth.Subject;
-
-import org.jboss.logging.Messages;
+import org.jboss.logging.Logger;
 
 /**
  * The internal pool implementation
@@ -119,14 +115,38 @@ public class SemaphoreArrayListManagedConnectionPool implements ManagedConnectio
    /** Statistics */
    private ManagedConnectionPoolStatisticsImpl statistics;
 
+   private static final Logger profileLogger = Logger.getLogger("com.efstech." + SemaphoreArrayListManagedConnectionPool.class);
+
    /**
     * Constructor
     */
    public SemaphoreArrayListManagedConnectionPool()
    {
+      if (profileLogger.isTraceEnabled())
+        prepareDelayedPrintout();
    }
 
-   /**
+   private void prepareDelayedPrintout() {
+      new Thread(new Runnable() {
+         @Override
+         public void run() {
+            profileLogger.debug("Sleeping");
+            try {
+               Thread.sleep(20000);
+            } catch (InterruptedException e) {
+               profileLogger.warn("Interrupted sleep!", e);
+            }
+            profileLogger.debug("Awoken");
+            for (ConnectionListener connectionListener : checkedOut) {
+               profileLogger.debug("Printing: " + connectionListener);
+               connectionListener.printStatus();
+            }
+            prepareDelayedPrintout();
+         }
+       }).start();
+   }
+
+    /**
     * {@inheritDoc}
     */
    public void initialize(ManagedConnectionFactory mcf, ConnectionListenerFactory clf, Subject subject,
@@ -373,6 +393,12 @@ public class SemaphoreArrayListManagedConnectionPool implements ManagedConnectio
          }
          else
          {
+            profileLogger.debug("No managed connections available - let's check on what's going on down there");
+            for (ConnectionListener connectionListener : checkedOut) {
+               profileLogger.debug("Printing: " + connectionListener);
+               connectionListener.printStatus();
+            }
+
             // We timed out
             throw new ResourceException(bundle.noMManagedConnectionsAvailableWithinConfiguredBlockingTimeout(
                   poolConfiguration.getBlockingTimeout()));
