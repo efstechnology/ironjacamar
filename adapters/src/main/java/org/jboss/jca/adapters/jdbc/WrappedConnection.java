@@ -64,7 +64,7 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
 
    private static Logger profileLogger = Logger.getLogger("com.efstech." + WrappedConnection.class.getName());
 
-   private LoggingPreparedStatement loggingPreparedStatement;
+   private StatementLogger statementLogger;
 
    /** The spy logger */
    protected static Logger spyLogger = Logger.getLogger(Constants.SPY_LOGGER_CATEGORY);
@@ -101,7 +101,7 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
    }
 
    public void printStatement() {
-      profileLogger.debug("Printing statement: " + loggingPreparedStatement.getSql());
+      profileLogger.debug("Printing statement: " + statementLogger.getSql());
    }
 
    /**
@@ -295,6 +295,13 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
     */
    protected abstract WrappedStatement wrapStatement(Statement statement, boolean spy, String jndiName);
 
+   private Statement doubleWrapStatement(Statement statement, boolean spy, String jndiName) {
+       final Statement wrappedStatement = wrapStatement(statement, spy, jndiName);
+       final LoggingStatement loggingStatement = new LoggingStatement(wrappedStatement);
+       this.statementLogger = loggingStatement;
+       return loggingStatement;
+   }
+
    /**
     * {@inheritDoc}
     */
@@ -309,7 +316,7 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
             if (spy)
                spyLogger.debugf("%s [%s] createStatement()", jndiName, Constants.SPY_LOGGER_PREFIX_CONNECTION);
 
-            return wrapStatement(mc.getConnection().createStatement(), spy, jndiName);
+            return doubleWrapStatement(mc.getConnection().createStatement(), spy, jndiName);
          }
          catch (Throwable t)
          {
@@ -338,7 +345,7 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
                                 jndiName, Constants.SPY_LOGGER_PREFIX_CONNECTION,
                                 resultSetType, resultSetConcurrency);
 
-            return wrapStatement(mc.getConnection().createStatement(resultSetType, resultSetConcurrency),
+            return doubleWrapStatement(mc.getConnection().createStatement(resultSetType, resultSetConcurrency),
                                  spy, jndiName);
          }
          catch (Throwable t)
@@ -369,7 +376,7 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
                                 jndiName, Constants.SPY_LOGGER_PREFIX_CONNECTION,
                                 resultSetType, resultSetConcurrency, resultSetHoldability);
 
-            return wrapStatement(mc.getConnection()
+            return doubleWrapStatement(mc.getConnection()
                                  .createStatement(resultSetType, resultSetConcurrency, resultSetHoldability),
                                  spy, jndiName);
          }
@@ -398,9 +405,9 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
     * Intercept statement wrapping and insert our own decorator
     */
    private PreparedStatement doubleWrapPreparedStatement(PreparedStatement statement, boolean spy, String jndiName, String sql) {
-       final WrappedPreparedStatement preparedStatement = wrapPreparedStatement(statement, spy, jndiName);
+       final PreparedStatement preparedStatement = wrapPreparedStatement(statement, spy, jndiName);
        final LoggingPreparedStatement loggingPreparedStatement = new LoggingPreparedStatement(preparedStatement, sql);
-       this.loggingPreparedStatement = loggingPreparedStatement;
+       this.statementLogger = loggingPreparedStatement;
        return loggingPreparedStatement;
    }
 
