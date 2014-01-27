@@ -117,7 +117,7 @@ public class SemaphoreArrayListManagedConnectionPool implements ManagedConnectio
    /** Statistics */
    private ManagedConnectionPoolStatisticsImpl statistics;
 
-   private static final Logger profileLogger = Logger.getLogger("com.efstech." + SemaphoreArrayListManagedConnectionPool.class);
+   private static final Logger profileLogger = Logger.getLogger("com.efstech." + SemaphoreArrayListManagedConnectionPool.class.getName());
 
    /**
     * Constructor

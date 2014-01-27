@@ -62,7 +62,7 @@ public abstract class WrappedConnection extends JBossWrapper implements Connecti
 {
    private static Logger log = Logger.getLogger(WrappedConnection.class);
 
-   private static Logger profileLogger = Logger.getLogger("com.efstech." + WrappedConnection.class);
+   private static Logger profileLogger = Logger.getLogger("com.efstech." + WrappedConnection.class.getName());
 
    private LoggingPreparedStatement loggingPreparedStatement;
 

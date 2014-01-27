@@ -16,7 +16,7 @@ import java.util.Calendar;
  */
 public class LoggingPreparedStatement implements PreparedStatement {
 
-    private static final Logger log = Logger.getLogger("com.efstech." + LoggingPreparedStatement.class);
+    private static final Logger log = Logger.getLogger("com.efstech." + LoggingPreparedStatement.class.getName());
 
     private final PreparedStatement preparedStatement;
     private final String sql;

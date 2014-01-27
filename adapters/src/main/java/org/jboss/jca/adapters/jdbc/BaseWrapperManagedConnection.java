@@ -106,7 +106,7 @@ public abstract class BaseWrapperManagedConnection implements ManagedConnection
    /** Destroyed */
    protected boolean destroyed = false;
 
-   private static final Logger profileLogger = Logger.getLogger("com.efstech." + BaseWrapperManagedConnection.class);
+   private static final Logger profileLogger = Logger.getLogger("com.efstech." + BaseWrapperManagedConnection.class.getName());
 
    @SuppressWarnings("UnusedDeclaration") //called by reflection (I'm very sorry)
    public void printStatus() {

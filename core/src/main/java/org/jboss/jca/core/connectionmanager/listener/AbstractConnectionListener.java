@@ -51,7 +51,7 @@ import org.jboss.logging.Messages;
  */
 public abstract class AbstractConnectionListener implements ConnectionListener
 {
-   private static final Logger profileLogger = Logger.getLogger("com.efstech." + AbstractConnectionListener.class);
+   private static final Logger profileLogger = Logger.getLogger("com.efstech." + AbstractConnectionListener.class.getName());
 
    private final CoreLogger log;
 
